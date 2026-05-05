@@ -18,6 +18,7 @@ classifiers = [
 ]
 dependencies = [
     "google-adk",
+    "mcp",
 ]
 
 [project.urls]
