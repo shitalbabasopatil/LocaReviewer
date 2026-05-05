@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "locareviewer"
+version = "0.1.0"
+authors = [
+  { name="Shital Babaso Patil", email="shitalbabasopatil@gmail.com" },
+]
+description = "LocaReviewer - Advanced AI-Powered Code Review Agent built on Google ADK."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "google-adk",
+]
+
+[project.urls]
+Homepage = "https://shitalam.in"
