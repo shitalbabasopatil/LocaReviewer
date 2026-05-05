@@ -91,6 +91,27 @@ adk web agent.py:root_agent
 ```
 *Spins up a local FastAPI server. Open the provided `localhost` URL in your browser to interact with LocaReviewer in a clean, sectioned Web interface.*
 
+### 4. MCP Server Mode
+LocaReviewer can also run as a **Model Context Protocol (MCP)** server, allowing other coding agents (like Claude Desktop, Cursor, or other MCP-compatible IDEs) to use its review tools.
+
+```bash
+python mcp_server.py
+```
+
+To configure it in your MCP client (e.g., Claude Desktop `claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "locareviewer": {
+      "command": "python",
+      "args": ["/absolute/path/to/LocaReviewer/mcp_server.py"]
+    }
+  }
+}
+```
+
+---
+
 #### 🧑‍💻 User Interaction Steps in Web UI
 
 **A. Performing a Commit ID Review:**
