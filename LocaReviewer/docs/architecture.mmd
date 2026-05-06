@@ -1,0 +1,48 @@
+graph TD
+    subgraph User_Interfaces ["User Interfaces"]
+        CLI["ADK CLI (adk run)"]
+        WebUI["Web UI (adk web)"]
+        MCP["MCP Client (Cursor/Claude)"]
+    end
+
+    subgraph Core_Agent ["LocaReviewer Agent (ADK-Python)"]
+        RootAgent["Root Agent"]
+        PromptEngine["Prompt Engine (Review Modes)"]
+        ToolOrchestrator["Tool Orchestrator"]
+    end
+
+    subgraph Intelligence ["AI Engine"]
+        LLM["Google Gemini (Pro/Flash)"]
+    end
+
+    subgraph Tools ["Agentic Tools"]
+        GitDiff["git_diff_tool"]
+        FileReader["file_reader_tool"]
+        FileWriter["file_writer_tool"]
+    end
+
+    subgraph Local_Environment ["Local Environment"]
+        Repo[".git Repository"]
+        Files["Source Files"]
+        Reports["Markdown Reports"]
+    end
+
+    %% Flow
+    CLI --> RootAgent
+    WebUI --> RootAgent
+    MCP --> RootAgent
+
+    RootAgent --> PromptEngine
+    RootAgent --> ToolOrchestrator
+
+    ToolOrchestrator --> GitDiff
+    ToolOrchestrator --> FileReader
+    ToolOrchestrator --> FileWriter
+
+    GitDiff --> Repo
+    FileReader --> Files
+    FileWriter --> Reports
+
+    RootAgent <--> LLM
+    LLM -- Analyzes Diffs/Files --> RootAgent
+    RootAgent -- Structured Feedback --> FileWriter
