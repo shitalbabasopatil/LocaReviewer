@@ -16,8 +16,12 @@
 # Email: shitalbabasopatil@gmail.com
 # Website: https://shitalam.in
 
+import warnings
 from mcp.server.fastmcp import FastMCP
 from agent import git_diff_tool, file_reader_tool, file_writer_tool
+
+# Suppress all warnings from the 'authlib' module to silence deprecation messages
+warnings.filterwarnings("ignore", module="authlib")
 
 # Initialize FastMCP server for LocaReviewer
 # This allows any MCP-compatible client (like Claude Desktop or Cursor) 

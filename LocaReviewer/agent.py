@@ -20,6 +20,10 @@ import os
 import subprocess
 from datetime import datetime, timezone
 import re
+import warnings
+
+# Suppress all warnings from the 'authlib' module to silence deprecation messages
+warnings.filterwarnings("ignore", module="authlib")
 
 from google.adk.agents.llm_agent import Agent
 
@@ -111,7 +115,12 @@ def file_writer_tool(report_content: str, repo_path: str = "", file_path: str = 
         else:
             target_dir = os.getcwd()
             
+        # Ensure directory exists
         os.makedirs(target_dir, exist_ok=True)
+        
+        # Verify writability
+        if not os.access(target_dir, os.W_OK):
+            return f"FileWriterError: Directory '{target_dir}' is not writable. Please check permissions."
         
         # Generate accurate UTC timestamp filename
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -123,9 +132,16 @@ def file_writer_tool(report_content: str, repo_path: str = "", file_path: str = 
         
         with open(full_path, 'w', encoding='utf-8') as f:
             f.write(clean_content)
-        return f"Successfully saved report to {full_path}"
+            f.flush()
+            try:
+                os.fsync(f.fileno())
+            except Exception:
+                pass # fsync might fail on some filesystems
+        
+        abs_final_path = os.path.abspath(full_path)
+        return f"Successfully saved report to {abs_final_path}"
     except Exception as e:
-        return f"FileWriterError: Error writing file: {e}"
+        return f"FileWriterError: Error writing file: {str(e)}"
 
 INSTRUCTION = """\
 You are LocaReviewer, an Advanced Code Reviewer Agent.
@@ -203,9 +219,10 @@ Ensure your tool calls are valid JSON. Pass the full markdown string into `repor
 - Your final output MUST trigger the execution of `file_writer_tool`.
 
 # 🔁 Execution Behavior
-- Output clean markdown. No extra explanations.
-- Precise and context-aware. Avoid generic suggestions. Focus on impact.
-- No hallucination, no assumptions beyond data. Deterministic output.
+- Once the report is generated, your PRIMARY goal is to call `file_writer_tool`.
+- To avoid duplicate output, you should provide the markdown report content DIRECTLY within the `file_writer_tool` call.
+- Do NOT print the entire report in the chat if you are also saving it to a file, unless specifically asked to do both.
+- Prefer a concise confirmation: "Review complete. Saving report..." followed by the tool call.
 """
 
 root_agent = Agent(
