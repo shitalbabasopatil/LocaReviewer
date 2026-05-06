@@ -219,16 +219,32 @@ Ensure your tool calls are valid JSON. Pass the full markdown string into `repor
 - Your final output MUST trigger the execution of `file_writer_tool`.
 
 # 🔁 Execution Behavior
-- Once the report is generated, your PRIMARY goal is to call `file_writer_tool`.
-- To avoid duplicate output, you should provide the markdown report content DIRECTLY within the `file_writer_tool` call.
-- Do NOT print the entire report in the chat if you are also saving it to a file, unless specifically asked to do both.
-- Prefer a concise confirmation: "Review complete. Saving report..." followed by the tool call.
+- Once the report is generated, your goal is to BOTH display it to the user and persist it.
+- 1. Output the full markdown report in the chat so the user can see it in the Web UI.
+- 2. IMMEDIATELY follow up by calling `file_writer_tool` with the exact same content to save it to disk.
+- This ensures the user sees the results immediately and has a permanent record.
 """
 
-root_agent = Agent(
-    model='gemini-2.5-flash',
-    name='LocaReviewer',
-    description='Advanced Code Reviewer Agent',
-    instruction=INSTRUCTION,
-    tools=[git_diff_tool, file_reader_tool, file_writer_tool]
-)
+def create_agent(model_name: str = 'gemini-3.1-flash-lite-preview'):
+    """Creates the LocaReviewer agent with the specified model."""
+    try:
+        return Agent(
+            model=model_name,
+            name='LocaReviewer',
+            description='Advanced Code Reviewer Agent',
+            instruction=INSTRUCTION,
+            tools=[git_diff_tool, file_reader_tool, file_writer_tool]
+        )
+    except Exception as e:
+        # Fallback to a more standard model if the requested one is unavailable
+        print(f"Warning: Model '{model_name}' initialization failed: {e}. Falling back to 'gemini-1.5-flash'.")
+        return Agent(
+            model='gemini-2.5-flash',
+            name='LocaReviewer',
+            description='Advanced Code Reviewer Agent (Fallback Mode)',
+            instruction=INSTRUCTION,
+            tools=[git_diff_tool, file_reader_tool, file_writer_tool]
+        )
+
+# Initialize the root agent
+root_agent = create_agent()
